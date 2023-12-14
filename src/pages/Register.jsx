@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import styled from "styled-components";
 import { toast, ToastContainer } from "react-toastify";
@@ -8,6 +8,7 @@ import axios from "axios";
 import { registerRoute } from "../utils/APIRoutes";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [values, setValues] = useState({
     username: "",
     email: "",
@@ -22,16 +23,41 @@ const Register = () => {
     draggable: true,
     theme: "dark",
   };
+
+  useEffect(() => {
+    if (localStorage.getItem("chat-app-user")) {
+      navigate("/");
+    }
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (handleValidation()) {
-      const { password, confirmPassword, username, email } = values;
-
-      const { data } = await axios.post(registerRoute, {
-        username,
-        email,
-        password,
-      });
+      const { password, username, email } = values; // Removed confirmPassword if it's not used
+      console.log("in validation", registerRoute);
+      try {
+        const response = await fetch(registerRoute, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const responseData = await response.json();
+        console.log(responseData);
+        if (responseData) {
+          localStorage.setItem("chat-app-user", responseData);
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      }
     }
   };
 
