@@ -1,11 +1,81 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import styled from "styled-components";
+import { Buffer } from "buffer";
+import axios from "axios";
 
-const setAvatar = () => {
+const SetAvatar = () => {
+  const api = "https://api.multiavatar.com/45678945";
+
+  const [avatars, setAvatars] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedAvatar, setSelectedAvatar] = useState([]);
+
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 8000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+  };
+
+  const setProfilePicture = () => {};
+
+  useEffect(async () => {
+    const data = [];
+
+    for (let i = 0; i < 4; i++) {
+      try {
+        const response = await fetch(
+          `${api}/${Math.round(Math.random() * 1000)}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch avatar. Status: ${response.status}`);
+        }
+
+        const svg = await response.text();
+        const base64 = btoa(svg);
+
+        // Store the base64 string in the data array
+        data.push(base64);
+      } catch (error) {
+        console.error("Error fetching avatar:", error);
+      }
+    }
+
+    // Now you can use the data array as needed
+    console.log(data);
+    setAvatars(data);
+    setIsLoading(false);
+  }, []);
+  console.log(avatars);
   return (
     <>
-      <Container>setAvatar</Container>
+      <Container>
+        <div className="title-container">
+          <h1>Pick an avatar</h1>
+          <div className="avatars">
+            {avatars.map((avatar, index) => {
+              return (
+                <div
+                  className={`avatar ${
+                    selectedAvatar == index ? "selected " : ""
+                  }`}
+                >
+                  <img
+                    src={`data:image/svg+xml;base64,${avatar}`}
+                    alt="Avattar"
+                    onClick={() => {
+                      setSelectedAvatar(index);
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </Container>
       <ToastContainer />
     </>
   );
@@ -67,4 +137,4 @@ const Container = styled.div`
   }
 `;
 
-export default setAvatar;
+export default SetAvatar;
